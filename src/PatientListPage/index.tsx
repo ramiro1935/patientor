@@ -1,14 +1,13 @@
 import React from 'react'
-import axios from 'axios'
 import { Container, Table, Button } from 'semantic-ui-react'
 
 import { PatientFormValues } from '../AddPatientModal/AddPatientForm'
 import AddPatientModal from '../AddPatientModal'
 import { Patient } from '../types'
-import { apiBaseUrl } from '../constants'
 import HealthRatingBar from '../components/HealthRatingBar'
 import { useStateValue } from '../state'
 import { Link } from 'react-router-dom'
+import patientService from '../service/patientService'
 
 const PatientListPage = () => {
   const [{ patients }, dispatch] = useStateValue()
@@ -25,10 +24,7 @@ const PatientListPage = () => {
 
   const submitNewPatient = async (values: PatientFormValues) => {
     try {
-      const { data: newPatient } = await axios.post<Patient>(
-        `${apiBaseUrl}/patients`,
-        values
-      )
+      const newPatient = await patientService.newPatient(values)
       dispatch({ type: 'ADD_PATIENT', payload: newPatient })
       closeModal()
     } catch (e) {

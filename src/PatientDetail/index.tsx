@@ -1,14 +1,12 @@
-import axios from 'axios'
 import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ListEntries } from './Entries'
 import { Grid, Header, Icon, Button } from 'semantic-ui-react'
-import { updatePatient, useStateValue } from '../state'
-import { apiBaseUrl } from '../constants'
-import { Patient } from '../types'
+import { addNewEntry, updatePatient, useStateValue } from '../state'
 
 import AddEntryModal from '../AddEntryModal'
 import { EntryFormValues } from '../AddEntryModal/AddEntryForm'
+import patientService from '../service/patientService'
 
 const PatientDetail = () => {
   const { id } = useParams<{ id: string }>()
@@ -21,9 +19,7 @@ const PatientDetail = () => {
   React.useEffect(() => {
     const fetchPatientDetail = async () => {
       try {
-        const { data: pacientDetail } = await axios.get<Patient>(
-          `${apiBaseUrl}/patients/${id}`
-        )
+        const pacientDetail = await patientService.getPatientById(id)
         dispatch(updatePatient(pacientDetail))
       } catch (e) {
         console.log(e)
@@ -38,8 +34,14 @@ const PatientDetail = () => {
     verifyExistPatient()
   }, [dispatch])
 
-  const onSubmit = (values: EntryFormValues) => {
-    console.log({values})
+  const onSubmit = async (values: EntryFormValues) => {
+    try {
+      setModal(false)
+      const patient = await patientService.newPatientEntry(values, id)
+      dispatch(addNewEntry(patient.entries ?? [], id))
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const onClose = () => {

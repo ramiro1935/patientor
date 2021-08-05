@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { Form, Formik, Field } from 'formik'
 import { Grid, Button } from 'semantic-ui-react'
 
-import { Entry, HealthCheckRating, UnionOmit } from '../types'
+import { Diagnoses, Entry, HealthCheckRating, UnionOmit } from '../types'
 import {
   TypeOption,
   SelectType,
   NumberField,
   TextField,
   DateField,
+  DiagnosisSelection,
 } from '../AddPatientModal/FormField'
 
 export type EntryFormValues = UnionOmit<Entry, 'id'>
@@ -24,6 +25,11 @@ const typeOptions: TypeOption[] = [
   { value: 'OccupationalHealthcare', label: 'OccupationalHealthcare' },
 ]
 
+const diagnosisOptions: Diagnoses[] = [
+  { code: 'Z57.1', name: 'diagnoses 1' },
+  { code: 'Z74.3', name: 'diagnoses 1' },
+  { code: 'M51.2', name: 'diagnoses 1' },
+]
 const initialValuesHealth: EntryFormValues = {
   type: 'HealthCheck',
   description: '',
@@ -38,8 +44,9 @@ const initialValuesOccupational = {
   specialist: '',
   employerName: '',
   'sickLeave.startDate': '',
-  'sickLeave.endDate': '', 
+  'sickLeave.endDate': '',
 } as EntryFormValues
+
 const initialValuesHospital = {
   type: 'Hospital',
   description: '',
@@ -113,8 +120,16 @@ const AddEntryForm = ({ onSubmit, onCancel }: Props) => {
               placeholder='EmployerName'
               component={TextField}
             />
-            <Field label='StartDate' name='sickLeave.startDate' component={DateField} />
-            <Field label='EndDate' name='sickLeave.endDate' component={DateField} />
+            <Field
+              label='StartDate'
+              name='sickLeave.startDate'
+              component={DateField}
+            />
+            <Field
+              label='EndDate'
+              name='sickLeave.endDate'
+              component={DateField}
+            />
           </>
         )
       default:
@@ -137,8 +152,9 @@ const AddEntryForm = ({ onSubmit, onCancel }: Props) => {
         if (!values.specialist) {
           errors.specialist = requiredError
         }
+        return errors
       }}>
-      {({ setFieldValue }) => {
+      {({ setFieldValue, setFieldTouched, isValid, dirty }) => {
         return (
           <Form className='form ui'>
             <SelectType
@@ -147,6 +163,11 @@ const AddEntryForm = ({ onSubmit, onCancel }: Props) => {
               label='Type'
               name='type'
               options={typeOptions}
+            />
+            <DiagnosisSelection
+              diagnoses={diagnosisOptions}
+              setFieldTouched={setFieldTouched}
+              setFieldValue={setFieldValue}
             />
             <Field
               label='Description'
@@ -169,7 +190,11 @@ const AddEntryForm = ({ onSubmit, onCancel }: Props) => {
                 </Button>
               </Grid.Column>
               <Grid.Column floated='right'>
-                <Button type='submit' floated='right' color='green'>
+                <Button
+                  type='submit'
+                  floated='right'
+                  color='green'
+                  disabled={!dirty || !isValid}>
                   Add
                 </Button>
               </Grid.Column>
